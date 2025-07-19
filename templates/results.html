@@ -8,6 +8,7 @@
 <body class="bg-light">
     <div class="container mt-4">
         <h2 class="mb-4">📊 View Student Results</h2>
+
         <form method="POST" class="mb-4">
             <div class="input-group">
                 <input type="text" name="adm_no" class="form-control" placeholder="Enter Admission Number (e.g. ADM001)" required>
@@ -21,6 +22,7 @@
 
         {% if student %}
             <h4>Results for {{ student["Full Name"] }} ({{ student["Admission Number"] }})</h4>
+
             {% if results %}
                 <table class="table table-striped mt-3">
                     <thead class="table-dark">
@@ -40,6 +42,34 @@
                 </table>
             {% else %}
                 <p>No results found for this student.</p>
+            {% endif %}
+
+            <hr class="my-4">
+
+            <h5>📎 Upload Scanned Result (PDF) with Note</h5>
+            <form action="/upload_result_file" method="POST" enctype="multipart/form-data" class="mb-3">
+                <input type="hidden" name="adm_no" value="{{ student['Admission Number'] }}">
+                <div class="mb-3">
+                    <input type="file" name="result_pdf" accept=".pdf" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <textarea name="note" rows="3" class="form-control" placeholder="Enter note for the uploaded result..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Upload PDF</button>
+            </form>
+
+            {% if result_pdf %}
+                <div class="mt-4">
+                    <h6>📄 Scanned Result:</h6>
+                    <a href="{{ result_pdf }}" target="_blank" class="btn btn-outline-primary">View PDF</a>
+                </div>
+            {% endif %}
+
+            {% if result_note %}
+                <div class="mt-3">
+                    <h6>📝 Note:</h6>
+                    <p class="border rounded p-3 bg-white">{{ result_note }}</p>
+                </div>
             {% endif %}
         {% endif %}
 

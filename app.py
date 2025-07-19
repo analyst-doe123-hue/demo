@@ -5,12 +5,16 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/images/gallery_uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['RESULTS_UPLOAD_FOLDER'] = 'static/results_uploads'
+app.config['ALLOWED_RESULT_EXTENSIONS'] = {'pdf'}
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
-# Ensure upload folder exists
+# Ensure upload folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['RESULTS_UPLOAD_FOLDER'], exist_ok=True)
 
 students_data = {}
+uploads = []
 
 def load_students():
     try:
@@ -35,7 +39,8 @@ def get_student_results(adm_no):
                     })
     return results
 
-uploads = []
+def allowed_result_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_RESULT_EXTENSIONS']
 
 @app.route('/')
 def home():
@@ -65,12 +70,54 @@ def profile_redirect():
 def results():
     if request.method == 'POST':
         adm_no = request.form.get('adm_no', '').strip().upper()
-        student = students_data.get(adm_no)
-        if not student:
-            return render_template('results.html', error="Student not found!")
-        results = get_student_results(adm_no)
-        return render_template('results.html', student=student, results=results)
-    return render_template('results.html')
+    else:
+        adm_no = request.args.get('adm_no', '').strip().upper()
+
+    if not adm_no:
+        return render_template('results.html')
+
+    student = students_data.get(adm_no)
+    if not student:
+        return render_template('results.html', error="Student not found!")
+
+    results = get_student_results(adm_no)
+
+    # PDF and note
+    pdf_filename = f"{adm_no}_result.pdf"
+    note_filename = f"{adm_no}_note.txt"
+    pdf_path = os.path.join(app.config['RESULTS_UPLOAD_FOLDER'], pdf_filename)
+    note_path = os.path.join(app.config['RESULTS_UPLOAD_FOLDER'], note_filename)
+
+    result_pdf_url = url_for('static', filename=f"results_uploads/{pdf_filename}") if os.path.exists(pdf_path) else None
+    result_note = ""
+    if os.path.exists(note_path):
+        with open(note_path, 'r', encoding='utf-8') as f:
+            result_note = f.read()
+
+    return render_template('results.html', student=student, results=results, result_pdf=result_pdf_url, result_note=result_note)
+
+@app.route('/upload_result_file', methods=['POST'])
+def upload_result_file():
+    adm_no = request.form.get('adm_no', '').strip().upper()
+    note = request.form.get('note', '')
+    file = request.files.get('result_pdf')
+
+    if adm_no not in students_data:
+        return render_template('results.html', error="Student not found!")
+
+    if file and allowed_result_file(file.filename):
+        filename = secure_filename(f"{adm_no}_result.pdf")
+        filepath = os.path.join(app.config['RESULTS_UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Save note
+        note_path = os.path.join(app.config['RESULTS_UPLOAD_FOLDER'], f"{adm_no}_note.txt")
+        with open(note_path, 'w', encoding='utf-8') as f:
+            f.write(note)
+
+        return redirect(url_for('results', adm_no=adm_no))
+    else:
+        return render_template('results.html', error="Invalid file type. Please upload a PDF.")
 
 @app.route('/gallery', methods=['GET', 'POST'])
 def gallery():
@@ -87,7 +134,7 @@ def gallery():
 
     return render_template('gallery.html', uploads=uploads)
 
-# Load data once at startup
+# Load students at startup
 load_students()
 
 if __name__ == '__main__':
