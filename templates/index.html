@@ -1,0 +1,15 @@
+<!-- templates/index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home">
+  <h1>Welcome to the Student Portfolio</h1>
+  <p>Explore student profiles, view gallery uploads, and upload your own photo with a note.</p>
+
+  <div class="buttons">
+    <a href="{{ url_for('search') }}" class="btn">Search Student</a>
+    <a href="{{ url_for('gallery') }}" class="btn">View Gallery</a>
+    <a href="{{ url_for('gallery') }}" class="btn">Upload Image</a>
+  </div>
+</div>
+{% endblock %}
