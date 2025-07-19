@@ -2,54 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student Search</title>
+    <title>Welcome - Daisy Sponsored Students</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body.dark-mode {
-            background-color: #121212;
-            color: #ffffff;
+        body {
+            background: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .card.dark-mode {
-            background-color: #1e1e1e;
+        .main-content {
+            flex: 1;
+        }
+        .logo {
+            max-height: 100px;
+        }
+        footer {
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 0;
         }
     </style>
 </head>
-<body class="bg-light" id="body">
-    <div class="container mt-4">
-        <div class="d-flex justify-content-end">
-            <button class="btn btn-outline-secondary btn-sm" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
-        </div>
-        <div class="card shadow p-4 mt-3" id="card">
-            <h2 class="mb-3 text-center">Search Student Profile</h2>
-            <form action="/search" method="POST">
-                <div class="mb-3">
-                    <input type="text" name="adm_no" class="form-control" placeholder="Enter Admission Number (e.g. ADM001)" required>
+<body>
+    <div class="main-content">
+        <div class="container py-5 text-center">
+            <img src="{{ url_for('static', filename='images/daisy logo.png') }}" alt="Daisy Logo" class="logo mb-4">
+            <h1 class="mb-3 fw-bold text-primary">Welcome to the Daisy Sponsored Students Portal</h1>
+            <p class="lead mb-4">Access profiles, results, and gallery for our outstanding Daisy beneficiaries.</p>
+
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('search') }}">
+                        <div class="input-group mb-3">
+                            <input type="text" name="adm_no" class="form-control" placeholder="Enter Admission Number (e.g. ADM001)" required>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </div>
-            </form>
-            {% if error %}
-                <div class="alert alert-danger mt-3 text-center">
-                    {{ error }}
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 
-    <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('card').classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        }
-
-        // Apply saved mode
-        window.onload = () => {
-            if (localStorage.getItem('darkMode') === 'true') {
-                toggleDarkMode();
-            }
-        }
-    </script>
+    <footer class="text-center">
+        <div>© 2025 | Designed by <strong>Gaylord Ndenga</strong></div>
+    </footer>
 </body>
 </html>
