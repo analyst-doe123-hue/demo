@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h2 class="mb-4">Search in {{ dept }} Department</h2>
+    
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="">
+        <div class="input-group mb-3 justify-content-center">
+            <input type="text" name="adm_no" class="form-control w-50" placeholder="Enter Admission Number" required>
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    {% if students %}
+        <div class="row mt-4">
+            <h4 class="mb-3">Students in {{ dept }} Department</h4>
+            {% for adm_no, student in students.items() %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <img src="{{ url_for('static', filename=student['Photo'].replace('static/', '')) }}" class="card-img-top" alt="{{ student['Full Name'] }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ student['Full Name'] }}</h5>
+                            <p class="card-text"><strong>ADM:</strong> {{ adm_no }}</p>
+                            <a href="{{ url_for('profile', adm_no=adm_no) }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
